@@ -5,13 +5,15 @@ from bs4 import BeautifulSoup
 import urllib.request
 from playsound import playsound
 
-#  shoud use 'playsound==1.2.2'
+# should use 'playsound == 1.2.2'
 
 # Mac user needs 'pip3 install -U PyObjC'
 
 import re
 ready_status = True
+copy_status = True
 err_log = ['Log List']
+v_audio_remove = [0]
 
 
 def sK(name):
@@ -57,7 +59,10 @@ def sK(name):
                 try:
                     urllib.request.urlopen(url_for)  # 取得連結
                     v_audio_filename = (v_title + '_' + abc + '.mp3')
-                    urllib.request.urlretrieve(url_for, v_audio_filename)
+                    if os.path.isfile(v_audio_filename):
+                        pass
+                    else:
+                        urllib.request.urlretrieve(url_for, v_audio_filename)
                     v_audio_list.append(v_audio_filename)  # 若有就納入清單中
                 except Exception as e:
                     err_log.append('[' + url_for + ']: ' + str(e))
@@ -94,9 +99,10 @@ def sK(name):
 
             # 剪貼簿
 
-            Copy_result = (KK_Result[0])  # 取用第一個音標
-            Copy_result = Copy_result.replace('KK', '')  # 將KK去除
-            pyperclip.copy(Copy_result + ' ' + v_meanstr)
+            if (copy_status is True):
+                Copy_result = (KK_Result[0])  # 取用第一個音標
+                Copy_result = Copy_result.replace('KK', '')  # 將KK去除
+                pyperclip.copy(Copy_result + ' ' + v_meanstr)
 
             # 結尾訊息
 
@@ -109,16 +115,13 @@ def sK(name):
             else:
                 for p in range(len(v_audio_list)):
                     audioS = (v_audio_list[p])
+                    v_audio_remove.append(v_audio_list[p])
                     try:
                         playsound(audioS)
                     except Exception as e:
                         err_log.append(e)
                         print("錯誤：無法撥放發音")
-
-            # 語音檔案刪除 ( Windows 系統須等到程式結束才會消失)
-
-            for i in range(len(v_audio_list)):
-                os.remove(v_audio_list[i])
+            v_audio_remove.pop(0)
         pass
 
 
@@ -130,11 +133,26 @@ while True:
     if not re.match(r"^[A-Za-z]+$", key):
         print('錯誤：只能輸入英文字母')
         ready_status = False
+    elif key == "vcopy":
+        if copy_status is True:
+            copy_status = False
+            print('複製模式已關閉')
+        else:
+            copy_status = True
+            print('複製模式已開啟')
+        ready_status = False
     elif key == "errlog":
         for i in range(len(err_log)):
             print('[' + str(i) + ']: ' + str(err_log[i]))
         ready_status = False
     elif key == "exit":
+
+        # 語音檔案刪除 ( Windows 系統須等到程式結束才會消失)
+
+        if len(v_audio_remove) > 1:
+            for i in range(len(v_audio_remove)):
+                os.remove(v_audio_remove[i])
+
         print('程式結束\n')
         break
     else:
