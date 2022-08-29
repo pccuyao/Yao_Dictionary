@@ -195,18 +195,16 @@ while True:
         for i in range(len(logger)):
             print('[' + str(i) + ']: ' + str(logger[i]))
         ready_status = False
-    elif key == "detemp":
+    elif key == "delog":
         for dirPath, dirNames, fileNames in os.walk('log/.'):
             for f in fileNames:
                 deleteFiles = ('log/' + f)
-                print('[' + deleteFiles + ']')
-                print('[' + identify_file_name + ']')
                 if str(f) not in str(identify_file_name):
                     try:
                         os.remove(deleteFiles)
-                        print('檔案 [' + deleteFiles + '] 已被刪除')
                         log_write(
                             'File :[' + deleteFiles + '] has been deleted')
+                        print('檔案 [' + deleteFiles + '] 已被刪除')
                     except Exception as e:
                         log_write(e)
                 else:
@@ -231,7 +229,6 @@ while True:
         for i in range(len(logger)):
             identify_file.write(str(logger[i]) + '\n')
         identify_file.close()
-        
         print('程式結束\n')
         break
     else:
