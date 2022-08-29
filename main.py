@@ -13,8 +13,9 @@ import time
 
 ready_status = True
 copy_status = True
+audio_status = True
 logger = ['Log List']
-v_audio_remove = [0]
+v_audio_remove = []
 log_number = 0
 nowTime = ""
 
@@ -29,6 +30,7 @@ if os.path.isdir('log'):
 else:
     os.makedirs('log')
 
+# 取得時間
 
 def Get_Now_Time():
     timeGet = time.localtime(time.time())
@@ -47,12 +49,12 @@ identify_file = open(identify_file_name, 'a+')
 
 def sK(name):
 
-    KK = [0]
+    KK = []
     KK_Split = [0]
-    KK_Result = [0, 1]
-    v_audio_list = [0]
+    KK_Result = [0]
+    v_audio_list = []
     url = ("https://tw.dictionary.search.yahoo.com/search;?p=" + name)
-    v_title = [0]
+    v_title = []
 
     if ready_status is True:
 
@@ -97,7 +99,6 @@ def sK(name):
                     v_audio_list.append(v_audio_filename)  # 若有就納入清單中
                 except Exception as e:
                     log_write('[' + url_for + ']: ' + str(e))
-            v_audio_list.pop(0)  # 刪除第一個空白項
 
             # 輸出清單
 
@@ -120,7 +121,6 @@ def sK(name):
 
             for s in sel:
                 KK.append(s.text)  # 將內容加入列表
-            KK.pop(0)  # 去除初始值
             KK_Split = KK[0].split()  # 將預設的音標拆分
             KK.pop(0)  # 將預設的音標去除
             KK_Result = KK_Split + KK  # 將已處理過的音標，剩下的音標相加。
@@ -134,7 +134,7 @@ def sK(name):
                 Copy_result = (KK_Result[0])  # 取用第一個音標
                 Copy_result = Copy_result.replace('KK', '')  # 將KK去除
                 pyperclip.copy(v_title + ' ' + Copy_result + ' ' + v_meanstr)
-                print('已複製其K音標及意思。')
+                print('已複製其KK音標及意思。')
             else:
                 print('複製模式已關閉')
 
@@ -143,19 +143,21 @@ def sK(name):
             print('原網址為: ' + url)
 
             # 聲音撥放
-
-            if len(v_audio_list) == 0:
-                print("錯誤：沒有可撥放的發音")
+            if audio_status is True:
+                if len(v_audio_list) == 0:
+                    print("錯誤：沒有可撥放的發音")
+                else:
+                    for p in range(len(v_audio_list)):
+                        audioS = (v_audio_list[p])
+                        v_audio_remove.append(v_audio_list[p])
+                        try:
+                            playsound(audioS)
+                        except Exception as e:
+                            log_write(e)
+                            print("錯誤：無法撥放發音")
             else:
-                for p in range(len(v_audio_list)):
-                    audioS = (v_audio_list[p])
-                    v_audio_remove.append(v_audio_list[p])
-                    try:
-                        playsound(audioS)
-                    except Exception as e:
-                        log_write(e)
-                        print("錯誤：無法撥放發音")
-            v_audio_remove.pop(0)
+                print('發音模式已關閉')
+                print(v_audio_remove)
         pass
 
 
@@ -170,7 +172,7 @@ def log_write(name):
 
 def program_start():
     os.system('cls' if os.name == 'nt' else 'clear')
-    print('單字查詢與複製系統\n可使用【exit】來離開。')
+    print('單字查詢與複製系統\n可使用【vhelp】查詢指令，【exit】來離開。')
     log_write('The program has been carefully started')
 
 
@@ -210,6 +212,25 @@ while True:
                 else:
                     print('equal')
         ready_status = False
+    elif key == 'vhelp':
+        print("指令說明\n"
+              "[vcopy]: 開啟、關閉複製模式\n"
+              "[vaudio]: 開啟、關閉發音模式\n"
+              "[errlog]: 檢視紀錄\n"
+              "[delog]: 刪除記錄檔\n"
+              "[vhelp]: 檢視說明\n"
+              "[exit]: 離開程式")
+        ready_status = False
+    elif key == 'vaudio':
+        if audio_status is True:
+            audio_status = False
+            log_write('Audio mode has beend closed')
+            print('發音模式已關閉')
+        else:
+            audio_status = True
+            log_write('Audio mode has beend opened')
+            print('發音模式已開啟')
+        ready_status = False
     elif key == "exit":
 
         # 檔案刪除 ( Windows 系統須等到程式結束才會消失)
@@ -223,7 +244,7 @@ while True:
                 except Exception as e:
                     log_write(e)
 
-        # 記錄檔製作
+        # 記錄存檔
 
         log_write('The program has been carefully closed')
         for i in range(len(logger)):
