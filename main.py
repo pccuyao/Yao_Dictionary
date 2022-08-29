@@ -4,16 +4,45 @@ import os
 from bs4 import BeautifulSoup
 import urllib.request
 from playsound import playsound
+import re
+import time
 
 # should use 'playsound == 1.2.2'
 
 # Mac user needs 'pip3 install -U PyObjC'
 
-import re
 ready_status = True
 copy_status = True
-err_log = ['Log List']
+logger = ['Log List']
 v_audio_remove = [0]
+log_number = 0
+nowTime = ""
+
+# 檢查暫存資料夾是否存在
+
+if os.path.isdir('temp'):
+    pass
+else:
+    os.makedirs('temp')
+if os.path.isdir('log'):
+    pass
+else:
+    os.makedirs('log')
+
+
+def Get_Now_Time():
+    timeGet = time.localtime(time.time())
+    nowTime = (
+        str(timeGet.tm_year) + '-' + str(timeGet.tm_mon) + '-'
+        + str(timeGet.tm_mday) + '-' + str(timeGet.tm_hour) + '-'
+        + str(timeGet.tm_min) + '-' + str(timeGet.tm_sec))
+    return nowTime
+
+
+# 檢查識別檔是否存在
+
+identify_file_name = ('log/.' + str(os.name) + '-' + Get_Now_Time())
+identify_file = open(identify_file_name, 'a+')
 
 
 def sK(name):
@@ -27,6 +56,8 @@ def sK(name):
 
     if ready_status is True:
 
+        log_write('Search: ' + name)
+
         #  爬蟲
 
         r = requests.get(url)
@@ -34,7 +65,7 @@ def sK(name):
         sel = soup.select("div.compList.d-ib")  # KK音標查詢，以此為標準
 
         if len(str(sel)) < 10:
-            err_log.append('Could not find: ' + name)
+            log_write('Could not find: ' + name)
             print("找不到資料！")
         else:
             v_mean = soup.select("div.compList.mb-25")  # 釋義查詢
@@ -58,14 +89,14 @@ def sK(name):
                     abc + "/" + v_title + ".mp3")
                 try:
                     urllib.request.urlopen(url_for)  # 取得連結
-                    v_audio_filename = (v_title + '_' + abc + '.mp3')
+                    v_audio_filename = ('temp/' + v_title + '_' + abc + '.mp3')
                     if os.path.isfile(v_audio_filename):
                         pass
                     else:
                         urllib.request.urlretrieve(url_for, v_audio_filename)
                     v_audio_list.append(v_audio_filename)  # 若有就納入清單中
                 except Exception as e:
-                    err_log.append('[' + url_for + ']: ' + str(e))
+                    log_write('[' + url_for + ']: ' + str(e))
             v_audio_list.pop(0)  # 刪除第一個空白項
 
             # 輸出清單
@@ -102,11 +133,14 @@ def sK(name):
             if (copy_status is True):
                 Copy_result = (KK_Result[0])  # 取用第一個音標
                 Copy_result = Copy_result.replace('KK', '')  # 將KK去除
-                pyperclip.copy(Copy_result + ' ' + v_meanstr)
+                pyperclip.copy(v_title + ' ' + Copy_result + ' ' + v_meanstr)
+                print('已複製其K音標及意思。')
+            else:
+                print('複製模式已關閉')
 
             # 結尾訊息
 
-            print('已複製其KK音標及意思。\n原網址為: ' + url)
+            print('原網址為: ' + url)
 
             # 聲音撥放
 
@@ -119,14 +153,28 @@ def sK(name):
                     try:
                         playsound(audioS)
                     except Exception as e:
-                        err_log.append(e)
+                        log_write(e)
                         print("錯誤：無法撥放發音")
             v_audio_remove.pop(0)
         pass
 
 
-os.system('cls' if os.name == 'nt' else 'clear')
-print('單字查詢與複製系統\n可使用【exit】來離開。')
+def log_write(name):
+    global log_number
+    Get_Now_Time()
+    log_content = ('[' + str(Get_Now_Time()) + ']('
+                   + str(log_number) + '): ' + str(name))
+    logger.append(log_content)
+    log_number = log_number + 1
+
+
+def program_start():
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print('單字查詢與複製系統\n可使用【exit】來離開。')
+    log_write('The program has been carefully started')
+
+
+program_start()
 while True:
     print('================================================\n')
     key = input("請輸入要查詢的單字：")
@@ -136,23 +184,54 @@ while True:
     elif key == "vcopy":
         if copy_status is True:
             copy_status = False
+            log_write('Copy mode has beend closed')
             print('複製模式已關閉')
         else:
             copy_status = True
+            log_write('Copy mode has beend opened')
             print('複製模式已開啟')
         ready_status = False
     elif key == "errlog":
-        for i in range(len(err_log)):
-            print('[' + str(i) + ']: ' + str(err_log[i]))
+        for i in range(len(logger)):
+            print('[' + str(i) + ']: ' + str(logger[i]))
+        ready_status = False
+    elif key == "detemp":
+        for dirPath, dirNames, fileNames in os.walk('log/.'):
+            for f in fileNames:
+                deleteFiles = ('log/' + f)
+                print('[' + deleteFiles + ']')
+                print('[' + identify_file_name + ']')
+                if str(f) not in str(identify_file_name):
+                    try:
+                        os.remove(deleteFiles)
+                        print('檔案 [' + deleteFiles + '] 已被刪除')
+                        log_write(
+                            'File :[' + deleteFiles + '] has been deleted')
+                    except Exception as e:
+                        log_write(e)
+                else:
+                    print('equal')
         ready_status = False
     elif key == "exit":
 
-        # 語音檔案刪除 ( Windows 系統須等到程式結束才會消失)
+        # 檔案刪除 ( Windows 系統須等到程式結束才會消失)
 
         if len(v_audio_remove) > 1:
             for i in range(len(v_audio_remove)):
-                os.remove(v_audio_remove[i])
+                try:
+                    os.remove(v_audio_remove[i])
+                    log_write('[' + str(v_audio_remove[i]) + '] :'
+                              + 'has been deleted')
+                except Exception as e:
+                    log_write(e)
 
+        # 記錄檔製作
+
+        log_write('The program has been carefully closed')
+        for i in range(len(logger)):
+            identify_file.write(str(logger[i]) + '\n')
+        identify_file.close()
+        
         print('程式結束\n')
         break
     else:

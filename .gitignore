@@ -112,5 +112,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# My
 .afpDeleted*
 *.mp3
+/log
+/temp
