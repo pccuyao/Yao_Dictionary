@@ -6,6 +6,7 @@ import urllib.request
 from playsound import playsound
 import re
 import time
+import webbrowser
 
 # should use 'playsound == 1.2.2'
 
@@ -18,6 +19,7 @@ logger = ['Log List']
 v_audio_remove = []
 log_number = 0
 nowTime = ""
+previous_temp = ""
 
 # 檢查暫存資料夾是否存在
 
@@ -31,6 +33,7 @@ else:
     os.makedirs('log')
 
 # 取得時間
+
 
 def Get_Now_Time():
     timeGet = time.localtime(time.time())
@@ -126,8 +129,14 @@ def sK(name):
             KK_Result = KK_Split + KK  # 將已處理過的音標，剩下的音標相加。
             print('音標:')
             print(KK_Result)
-            print('========================\n')
+            print('========================')
 
+            # 網址檢視
+
+            print('原網址為: ' + url)
+            global previous_temp
+            previous_temp = (url)
+            
             # 剪貼簿
 
             if (copy_status is True):
@@ -137,10 +146,6 @@ def sK(name):
                 print('已複製其KK音標及意思。')
             else:
                 print('複製模式已關閉')
-
-            # 結尾訊息
-
-            print('原網址為: ' + url)
 
             # 聲音撥放
             if audio_status is True:
@@ -170,6 +175,32 @@ def log_write(name):
     log_number = log_number + 1
 
 
+def program_close():
+
+    # 檔案刪除 ( Windows 系統須等到程式結束才會消失)
+
+    if len(v_audio_remove) > 1:
+        for i in range(len(v_audio_remove)):
+            try:
+                os.remove(v_audio_remove[i])
+                log_write('[' + str(v_audio_remove[i]) + '] :'
+                            + 'has been deleted')
+            except Exception as e:
+                log_write(e)
+
+    # 記錄存檔
+
+    log_write('The program has been carefully closed')
+    for i in range(len(logger)):
+        identify_file.write(str(logger[i]) + '\n')
+    identify_file.close()
+
+    # 關閉
+
+    print('程式結束\n')
+    os._exit
+
+
 def program_start():
     os.system('cls' if os.name == 'nt' else 'clear')
     print('單字查詢與複製系統\n可使用【vhelp】查詢指令，【exit】來離開。')
@@ -178,24 +209,24 @@ def program_start():
 
 program_start()
 while True:
-    print('================================================\n')
-    key = input("請輸入要查詢的單字：")
+    print('================================================')
+    key = input("輸入：")
     if not re.match(r"^[A-Za-z]+$", key):
         print('錯誤：只能輸入英文字母')
         ready_status = False
     elif key == "vcopy":
         if copy_status is True:
             copy_status = False
-            log_write('Copy mode has beend closed')
+            log_write('Copy mode has been closed')
             print('複製模式已關閉')
         else:
             copy_status = True
-            log_write('Copy mode has beend opened')
+            log_write('Copy mode has been opened')
             print('複製模式已開啟')
         ready_status = False
     elif key == "errlog":
         for i in range(len(logger)):
-            print('[' + str(i) + ']: ' + str(logger[i]))
+            print(str(logger[i]))
         ready_status = False
     elif key == "delog":
         for dirPath, dirNames, fileNames in os.walk('log/.'):
@@ -216,6 +247,7 @@ while True:
         print("指令說明\n"
               "[vcopy]: 開啟、關閉複製模式\n"
               "[vaudio]: 開啟、關閉發音模式\n"
+              "[vopen]: 開啟最後查詢過的單字連結\n"
               "[errlog]: 檢視紀錄\n"
               "[delog]: 刪除記錄檔\n"
               "[vhelp]: 檢視說明\n"
@@ -224,33 +256,27 @@ while True:
     elif key == 'vaudio':
         if audio_status is True:
             audio_status = False
-            log_write('Audio mode has beend closed')
+            log_write('Audio mode has been closed')
             print('發音模式已關閉')
         else:
             audio_status = True
-            log_write('Audio mode has beend opened')
+            log_write('Audio mode has been opened')
             print('發音模式已開啟')
         ready_status = False
+    elif key == 'vopen':
+        try:
+            if len(previous_temp) < 10:
+                print('沒有可開啟的連結')
+                log_write('URL is empty, could not open.')
+            else:
+                webbrowser.open(previous_temp)
+                log_write('Open: ' + previous_temp)
+        except Exception as e:
+            log_write(e)
+        ready_status = False
     elif key == "exit":
-
-        # 檔案刪除 ( Windows 系統須等到程式結束才會消失)
-
-        if len(v_audio_remove) > 1:
-            for i in range(len(v_audio_remove)):
-                try:
-                    os.remove(v_audio_remove[i])
-                    log_write('[' + str(v_audio_remove[i]) + '] :'
-                              + 'has been deleted')
-                except Exception as e:
-                    log_write(e)
-
-        # 記錄存檔
-
-        log_write('The program has been carefully closed')
-        for i in range(len(logger)):
-            identify_file.write(str(logger[i]) + '\n')
-        identify_file.close()
-        print('程式結束\n')
+        program_close()
+        ready_status = False 
         break
     else:
         ready_status = True

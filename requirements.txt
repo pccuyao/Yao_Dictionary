@@ -1,0 +1,10 @@
+ requests
+ pyperclip
+ os
+ BeautifulSoup
+ urllib.request
+ playsound == 1.2.2
+ re
+ time
+ webbrowser
+ 

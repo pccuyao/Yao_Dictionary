@@ -9,13 +9,13 @@
 * 功能：自動查詢與複製Yahoo奇摩字典的英文->中文釋義，並在查詢之後自動發音。
 * 平台：Windows / Mac
 * 必要第三方函式庫：pyperclip, BeautifulSoup, playsound (1.2.2)
-* 必要原生函式庫：requests, urllib.request, os, re, time, PyObjC (Mac)
+* 必要原生函式庫：requests, urllib.request, os, re, time, webbrowser, PyObjC (Mac)
 
 ## 程式運作
 
 * 若安裝完必要的函式庫，理論上應該可以正常運作。
 * 程式預設會自動輪迴，可直接輸入 `vhelp` 來查詢字彙。
-* 輸入 `vcopy` 可關閉複製功能(預設是開啟)、`vaudio` 是關閉發音功能(預設是開啟)，輸入 `exit` 可離開程式。
+* 輸入 `vcopy` 可關閉複製功能(預設是開啟)、`vaudio` 關閉發音功能(預設是開啟)，輸入 `exit` 可離開程式。
 * 程式預設會將記錄檔存至 `/log` 資料夾，發音檔則是會暫存至 `/temp` 中，前者可使用指令 `delog` 刪除，後者程式結束時會自動刪除。
 * 若須要將語音檔案保存，可善用程式執行期間將其拷貝出來。
 
