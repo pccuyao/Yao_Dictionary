@@ -1,10 +1,5 @@
  requests
  pyperclip
- os
- BeautifulSoup
- urllib.request
+ beautifulsoup4
  playsound == 1.2.2
- re
- time
- webbrowser
- 
+ lxml

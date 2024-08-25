@@ -4,12 +4,11 @@ import os
 from bs4 import BeautifulSoup
 import urllib.request
 from playsound import playsound
-import re
 import time
 import webbrowser
 
 # should use 'playsound == 1.2.2'
-
+# Python 3.11
 # Mac user needs 'pip3 install -U PyObjC'
 
 ready_status = True
@@ -70,8 +69,10 @@ def sK(name):
         sel = soup.select("div.compList.d-ib")  # KK音標查詢，以此為標準
 
         if len(str(sel)) < 10:
+            v_possible = soup.select("div.compTitle.fz-16.lh-36.w-100p.h-36")
+            for i in v_possible:
+                print(i.text)
             log_write('Could not find: ' + name)
-            print("找不到資料！")
         else:
             v_mean = soup.select("div.compList.mb-25")  # 釋義查詢
             v_pp = soup.find_all(
@@ -211,10 +212,7 @@ program_start()
 while True:
     print('================================================')
     key = input("輸入：")
-    if not re.match(r"^[A-Za-z]+$", key):
-        print('錯誤：只能輸入英文字母')
-        ready_status = False
-    elif key == "vcopy":
+    if key == "vcopy":
         if copy_status is True:
             copy_status = False
             log_write('Copy mode has been closed')
